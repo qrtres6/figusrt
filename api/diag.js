@@ -34,7 +34,14 @@ export default async function handler(req, res) {
       const key = normName(name);
       const u = await getUser(key);
       const p = await getProgress(key);
-      lookup = { name_key: key, existeCuenta: !!u, figusGuardadas: p && p.counts ? Object.keys(p.counts).length : 0, ts: (p && p.ts) || 0 };
+      lookup = {
+        name_key: key,
+        existeCuenta: !!u,
+        figusGuardadas: p && p.counts ? Object.keys(p.counts).length : 0,
+        ts: (p && p.ts) || 0,
+        dataType: typeof p,
+        dataPreview: typeof p === 'string' ? p.slice(0, 120) : JSON.stringify(p).slice(0, 120),
+      };
     } catch (err) { error = 'lookup: ' + (err.message || err); }
   }
 
