@@ -261,6 +261,11 @@ body::before{
 .auth-note{color:var(--muted);font-size:12px;text-align:center;margin-top:14px;line-height:1.4}
 .acct{font-size:13px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:6px;background:#efe9da;padding:7px 12px;border-radius:11px}
 .linkbtn{border:none;background:none;color:var(--red);font-weight:700;cursor:pointer;font-family:'Barlow';font-size:13px;padding:0}
+.sync{font-size:12px;font-weight:600;padding:5px 10px;border-radius:9px;white-space:nowrap;transition:.2s}
+.sync.saving{background:#fbf0d6;color:#9a6b16}
+.sync.saved{background:#e3f3e8;color:#2f9e5b}
+.sync.err{background:#fbe2e2;color:var(--red);cursor:help}
+.sync:empty{display:none}
 .linkbtn:hover{text-decoration:underline}
 </style>
 </head>
@@ -310,6 +315,7 @@ body::before{
         Importar fotos en lote
       </button>
       <span class="hint">Elegí varias imágenes juntas. Si los archivos se llaman como el código (ej. <code>ARG1.jpg</code>) las pega solas.</span>
+      <span class="sync" id="syncStatus"></span>
       <span class="acct" id="acct"></span>
       <button class="btn btn-ghost" id="btnMenu">⋯</button>
     </div>
@@ -429,12 +435,22 @@ function save(){
   writeLocal();
   clearTimeout(syncT); syncT=setTimeout(syncToServer, 800);
 }
+function setSync(kind, title){
+  const el=$("#syncStatus"); if(!el) return;
+  if(kind==='saving'){ el.className='sync saving'; el.textContent='Guardando…'; el.title=''; }
+  else if(kind==='saved'){ el.className='sync saved'; el.textContent='Guardado ✓'; el.title='Guardado en tu cuenta';
+    clearTimeout(el._t); el._t=setTimeout(()=>{ if(el.classList.contains('saved')) el.textContent='En la nube ✓'; },1500); }
+  else { el.className='sync err'; el.textContent='⚠ sin guardar'; el.title=title||'No se pudo guardar en el servidor'; }
+}
 async function syncToServer(){
   if(!authToken) return;
+  setSync('saving');
   try{
-    await fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+    const r=await fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
       body:JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes,ts:state.ts})});
-  }catch(e){}
+    if(r.ok){ setSync('saved'); }
+    else{ let d=''; try{ d=(await r.json()).detail||''; }catch(e){} console.error('sync error', r.status, d); setSync('err', 'Error '+r.status+(d?': '+d:'')); }
+  }catch(e){ console.error('sync network error', e); setSync('err','Sin conexión'); }
 }
 const cnt = id => state.counts[id]||0;
 function setCnt(id,n){ n=Math.max(0,n|0); if(n) state.counts[id]=n; else delete state.counts[id]; save(); }
