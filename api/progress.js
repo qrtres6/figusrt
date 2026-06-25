@@ -14,7 +14,8 @@ export default async function handler(req, res) {
       if (Object.keys(counts).length > 5000 || Object.keys(names).length > 500) {
         return res.status(413).json({ error: 'Demasiados datos' });
       }
-      await setProgress(key, { counts, names, showCodes: !!(body && body.showCodes), ts: Date.now() });
+      const ts = (body && typeof body.ts === 'number') ? body.ts : Date.now();
+      await setProgress(key, { counts, names, showCodes: !!(body && body.showCodes), ts });
       return res.status(200).json({ ok: true });
     }
     return res.status(405).json({ error: 'Método no permitido' });

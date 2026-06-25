@@ -419,17 +419,21 @@ DATA.teams.forEach(t=>{
 });
 
 /* ---------- state ---------- */
-let state = { counts:{}, names:{}, flags:{}, showCodes:true };
+let state = { counts:{}, names:{}, flags:{}, showCodes:true, ts:0 };
 let syncT=null;
+function writeLocal(){
+  try{ localStorage.setItem(lsKey(), JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes,ts:state.ts})); }catch(e){}
+}
 function save(){
-  try{ localStorage.setItem(lsKey(), JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes})); }catch(e){}
+  state.ts = Date.now();
+  writeLocal();
   clearTimeout(syncT); syncT=setTimeout(syncToServer, 800);
 }
 async function syncToServer(){
   if(!authToken) return;
   try{
     await fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
-      body:JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes})});
+      body:JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes,ts:state.ts})});
   }catch(e){}
 }
 const cnt = id => state.counts[id]||0;
@@ -805,6 +809,7 @@ function applyProgress(p){
   state.counts = (p && p.counts && typeof p.counts==='object') ? p.counts : {};
   state.names  = (p && p.names  && typeof p.names==='object')  ? p.names  : {};
   if(p && typeof p.showCodes==='boolean') state.showCodes=p.showCodes;
+  state.ts = (p && typeof p.ts==='number') ? p.ts : 0;
 }
 async function serverGetProgress(){
   if(!authToken) return null;
@@ -826,14 +831,24 @@ function logout(){
 let albumDataLoaded=false;
 async function startApp(){
   // 1) instant: local cache for this user
-  try{ const c=localStorage.getItem(lsKey()); if(c) applyProgress(JSON.parse(c)); }catch(e){}
+  let localTs=0;
+  try{ const c=localStorage.getItem(lsKey()); if(c){ const o=JSON.parse(c); applyProgress(o); localTs=state.ts; } }catch(e){}
   if(!albumDataLoaded){ await openDB(); const keys=await photoKeys(); for(const k of keys){ customCache[k]=await photoGet(k); } albumDataLoaded=true; }
   $("#acct").innerHTML='👤 '+escapeHtml(userName||'')+' · <button id="logoutBtn" class="linkbtn">Salir</button>';
   $("#logoutBtn").addEventListener('click', logout);
   renderAll();
-  // 2) refresh from server, then re-render
+  // 2) reconcile with server by timestamp — never let it wipe newer local data
   const sp=await serverGetProgress();
-  if(sp){ applyProgress(sp); try{ localStorage.setItem(lsKey(), JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes})); }catch(e){} renderAll(); }
+  if(sp){
+    const serverTs=(typeof sp.ts==='number')?sp.ts:0;
+    const localCount=Object.keys(state.counts||{}).length;        // local (ya aplicado del cache)
+    const serverCount=Object.keys((sp.counts)||{}).length;
+    if(serverTs>localTs || (serverTs===localTs && serverCount>localCount)){
+      applyProgress(sp); writeLocal(); renderAll();               // server gana (otro dispositivo o más datos)
+    } else if(localTs>serverTs || (serverTs===localTs && localCount>serverCount)){
+      syncToServer();                                              // local gana → subirlo
+    }
+  }
 }
 
 /* ---------- auth UI ---------- */
