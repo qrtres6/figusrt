@@ -1,0 +1,10 @@
+{
+  "name": "album-mundial-2026",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Álbum interactivo Mundial 2026 con cuentas (nombre + PIN)",
+  "dependencies": {
+    "@upstash/redis": "^1.34.3"
+  }
+}
