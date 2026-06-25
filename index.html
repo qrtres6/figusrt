@@ -409,10 +409,17 @@ body::before{
 (function(){
 "use strict";
 const DATA = window.ALBUM_DATA;
-const TOKEN_KEY = "album2026_token", NAME_KEY = "album2026_name";
+const TOKEN_KEY = "album2026_token", NAME_KEY = "album2026_name", NK_KEY = "album2026_nk";
 let authToken = localStorage.getItem(TOKEN_KEY) || null;
 let userName = localStorage.getItem(NAME_KEY) || null;
-const lsKey = () => "album2026_state_" + (userName || "_");
+let userKey  = localStorage.getItem(NK_KEY)   || null;     // normalised key — stable across logins of same account
+// Same normalisation as the server (so the cache key matches across devices for the same account).
+function normNameClient(s){
+  return String(s||'').trim().toLowerCase()
+    .normalize('NFKD').replace(/[̀-ͯ]/g,'')
+    .replace(/\s+/g,' ').slice(0,40);
+}
+const lsKey = () => "album2026_state_" + (userKey || normNameClient(userName||'') || "_");
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -442,16 +449,35 @@ function setSync(kind, title){
     clearTimeout(el._t); el._t=setTimeout(()=>{ if(el.classList.contains('saved')) el.textContent='En la nube ✓'; },1500); }
   else { el.className='sync err'; el.textContent='⚠ sin guardar'; el.title=title||'No se pudo guardar en el servidor'; }
 }
+let pendingSync=false;     // there are unsaved changes
+let syncing=false;         // a POST is in flight
 async function syncToServer(){
-  if(!authToken) return;
+  if(!authToken){ return; }
+  if(syncing){ pendingSync=true; return; }
+  syncing=true; pendingSync=false;
   setSync('saving');
   try{
     const r=await fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
       body:JSON.stringify({counts:state.counts,names:state.names,showCodes:state.showCodes,ts:state.ts})});
-    if(r.ok){ setSync('saved'); }
-    else{ let d=''; try{ d=(await r.json()).detail||''; }catch(e){} console.error('sync error', r.status, d); setSync('err', 'Error '+r.status+(d?': '+d:'')); }
-  }catch(e){ console.error('sync network error', e); setSync('err','Sin conexión'); }
+    if(r.status===401){ setSync('err','Sesión expirada'); logout(); return; }
+    if(r.ok){
+      try{ const j=await r.json(); if(j && typeof j.ts==='number') state.ts=j.ts; }catch(e){}
+      setSync('saved');
+    } else {
+      let msg=''; try{ msg=((await r.json())||{}).error||''; }catch(e){}
+      console.error('sync error', r.status, msg);
+      setSync('err','Error '+r.status+(msg?': '+msg:''));
+      pendingSync=true;  // try again later
+    }
+  }catch(e){
+    console.error('sync network error', e);
+    setSync('err','Sin conexión'); pendingSync=true;
+  }finally{
+    syncing=false;
+    if(pendingSync) setTimeout(()=>{ if(authToken && pendingSync) syncToServer(); }, 5000); // back-off retry
+  }
 }
+window.addEventListener('online', ()=>{ if(authToken && pendingSync) syncToServer(); });
 const cnt = id => state.counts[id]||0;
 function setCnt(id,n){ n=Math.max(0,n|0); if(n) state.counts[id]=n; else delete state.counts[id]; save(); }
 function teamName(t){ return state.names[t.code]||t.name; }
@@ -838,10 +864,17 @@ async function serverGetProgress(){
 }
 function showAuth(){ $("#auth").style.display='flex'; $("#appWrap").style.display='none'; }
 function showApp(){ $("#auth").style.display='none'; $("#appWrap").style.display='block'; }
-function logout(){
-  authToken=null; userName=null;
-  localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY);
-  state={counts:{},names:{},flags:{},showCodes:true};
+async function logout(){
+  authToken=null; userName=null; userKey=null;
+  localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY); localStorage.removeItem(NK_KEY);
+  state={counts:{},names:{},flags:{},showCodes:true,ts:0};
+  pendingSync=false;
+  // Wipe per-device custom photos so the next user on this device doesn't see them.
+  try{
+    const keys=await photoKeys();
+    for(const k of keys){ delete customCache[k]; await photoDel(k); }
+  }catch(e){}
+  $("#syncStatus").className='sync'; $("#syncStatus").textContent='';
   showAuth();
 }
 let albumDataLoaded=false;
@@ -882,9 +915,16 @@ async function authSubmit(){
       {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin})});
     const data=await r.json().catch(()=>({}));
     if(!r.ok){ err.textContent=data.error||'Algo salió mal.'; return; }
-    authToken=data.token; userName=data.name;
-    localStorage.setItem(TOKEN_KEY,authToken); localStorage.setItem(NAME_KEY,userName);
-    state={counts:{},names:{},flags:{},showCodes:true};
+    const newKey=normNameClient(data.name);
+    // If a different user was logged here before, wipe their per-device photos.
+    const prevKey=localStorage.getItem(NK_KEY);
+    if(prevKey && prevKey!==newKey){
+      try{ await openDB(); const keys=await photoKeys(); for(const k of keys){ delete customCache[k]; await photoDel(k); } }catch(e){}
+    }
+    authToken=data.token; userName=data.name; userKey=newKey;
+    localStorage.setItem(TOKEN_KEY,authToken); localStorage.setItem(NAME_KEY,userName); localStorage.setItem(NK_KEY,userKey);
+    state={counts:{},names:{},flags:{},showCodes:true,ts:0};
+    pendingSync=false;
     $("#aPin").value='';
     showApp(); await startApp();
   }catch(e){ err.textContent='No se pudo conectar con el servidor.'; }
