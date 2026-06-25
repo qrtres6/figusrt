@@ -830,7 +830,7 @@ function applyProgress(p){
 async function serverGetProgress(){
   if(!authToken) return null;
   try{
-    const r=await fetch('/api/progress',{headers:{'Authorization':'Bearer '+authToken}});
+    const r=await fetch('/api/progress?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+authToken}});
     if(r.status===401){ logout(); return null; }
     if(!r.ok) return null;
     return await r.json();

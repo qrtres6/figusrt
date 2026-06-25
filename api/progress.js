@@ -1,6 +1,7 @@
 import { authKey, getProgress, setProgress, readBody, dbErrorResponse } from '../lib/store.js';
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
   const key = authKey(req);
   if (!key) return res.status(401).json({ error: 'No autenticado' });
   try {
