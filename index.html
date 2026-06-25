@@ -234,34 +234,45 @@ body::before{
 
 /* TRADES (propuestas con chat) */
 .trades-sec{margin-bottom:22px}
-.trades-sec h2{margin:0 0 4px;font-family:'Archivo Black';font-size:18px}
-.trades-sec .lead{color:var(--muted);font-size:13.5px;margin:0 0 12px}
-.trade{background:#f9f4e6;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
-.trade-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
-.trade-head:hover{background:#f1ebd9}
-.trade-av{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:13px;flex:none;letter-spacing:.02em}
+.trades-sec h2{margin:0 0 4px;font-family:'Archivo Black';font-size:18px;display:flex;align-items:center;gap:9px}
+.trades-sec h2 .h-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;font-family:'Barlow';font-size:12px;font-weight:700;min-width:22px;height:22px;padding:0 7px;border-radius:11px}
+.trades-sec .lead{color:var(--muted);font-size:13.5px;margin:0 0 14px;line-height:1.4}
+.trade{background:#fff;border:1px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 0 rgba(40,34,20,.04)}
+.trade.unread{border-color:var(--red);box-shadow:0 0 0 1px var(--red), 0 2px 8px -4px rgba(212,33,46,.3)}
+.trade-head{display:flex;align-items:center;gap:11px;padding:13px 14px;cursor:pointer;user-select:none;transition:.12s background}
+.trade-head:hover{background:#f9f4e6}
+.trade-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#3658c7);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:14px;flex:none;letter-spacing:.02em;box-shadow:0 2px 6px -2px rgba(31,63,168,.35)}
+.trade.in .trade-av{background:linear-gradient(135deg,var(--orange),#f08a3d)}
 .trade-meta{flex:1;min-width:0}
-.trade-line{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.trade-line .dir{color:var(--muted);font-weight:500;font-size:12.5px}
-.trade-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.tstatus{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;font-family:'Barlow'}
+.trade-line{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.2}
+.trade-line .dir{color:var(--muted);font-weight:500;font-size:12.5px;letter-spacing:.02em}
+.trade-sub{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.trade-sub .pill{display:inline-flex;align-items:center;gap:4px;background:#efe9da;padding:2px 9px;border-radius:20px;font-weight:600;color:var(--ink);font-size:11.5px}
+.trade-sub .pill b{font-weight:800}
+.trade-sub .pill.give{background:#fde7d2;color:#a05012}
+.trade-sub .pill.take{background:#d4ecdb;color:#1b6c40}
+.tstatus{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase;font-family:'Barlow';white-space:nowrap}
 .tstatus.pending{background:#fbe6c6;color:#9a6b16}
 .tstatus.accepted{background:#cfeadc;color:#1b6c40}
 .tstatus.half_completed{background:#cfe4fb;color:#1b487d}
 .tstatus.completed{background:var(--green);color:#fff}
 .tstatus.rejected,.tstatus.cancelled{background:#e2dccc;color:#666}
 .trade.open .match-arrow{transform:rotate(90deg)}
-.trade-body{display:none;padding:6px 14px 14px;border-top:1px solid var(--line);background:#fdfaef}
+.trade-body{display:none;padding:10px 16px 16px;border-top:1px solid var(--line);background:#fdfaef}
 .trade.open .trade-body{display:block}
-.trade-lists{margin:8px 0 12px}
-.trade-listrow{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-.trade-listrow .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;min-width:90px}
-.trade-listrow .lbl.give{color:var(--orange)}
-.trade-listrow .lbl.take{color:var(--green)}
-.trade-codes{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}
-.tcode{background:#efe9da;border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;cursor:pointer}
-.tcode:hover{background:#e2dcc5}
-.tcode.mini{font-size:11px;padding:2px 6px}
+
+/* Visual sticker grid inside a trade */
+.trade-deal{display:grid;grid-template-columns:1fr;gap:14px;margin:12px 0 14px}
+@media(min-width:560px){.trade-deal{grid-template-columns:1fr 1fr}}
+.deal-side{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.deal-side .deal-h{display:flex;align-items:center;gap:6px;font-family:'Archivo Black';font-size:12px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.deal-side.give .deal-h{color:var(--orange)}
+.deal-side.take .deal-h{color:var(--green)}
+.deal-side .deal-h .num{margin-left:auto;font-family:'Barlow';font-size:12px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:0}
+.deal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+.deal-fig{aspect-ratio:449/561;border-radius:8px;overflow:hidden;background:#cfc7b2;position:relative;box-shadow:0 1px 3px -1px rgba(0,0,0,.15)}
+.deal-fig img{width:100%;height:100%;object-fit:cover;display:block}
+.deal-fig .lbl{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:9.5px;font-weight:700;text-align:center;padding:6px 2px 3px;letter-spacing:.02em}
 
 .chatbox{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px;margin:8px 0 10px;max-height:240px;overflow-y:auto}
 .chatempty{color:var(--muted);font-size:12.5px;text-align:center;padding:8px}
@@ -465,8 +476,8 @@ body::before{
       </div>
 
       <div class="trades-sec" id="tradesSec" style="display:none">
-        <h2>Tus propuestas</h2>
-        <p class="lead">Conversá con la otra persona, aceptá o rechazá, y cuando coordinen el cambio en persona, los dos tocan <b>Confirmar cambio</b> para actualizar el álbum.</p>
+        <h2><span>Tus propuestas</span> <span class="h-badge" id="hPending" style="display:none">0</span></h2>
+        <p class="lead">Conversá con la otra persona, aceptá o rechazá. Cuando se vean en persona y hagan el cambio, los dos tocan <b>Confirmar cambio</b> y el álbum se actualiza solo.</p>
         <div id="tradesList"></div>
       </div>
 
@@ -1046,6 +1057,8 @@ function renderTrades(){
   all.forEach(t=>box.appendChild(renderTradeCard(t)));
   // pending received that I haven't seen yet → badge
   const pendingIn = d.trades.filter(t=>t.status==='pending' && !t.isOutgoing).length;
+  const hp = $("#hPending");
+  if(hp){ if(pendingIn>0){ hp.textContent=pendingIn; hp.style.display='inline-flex'; } else hp.style.display='none'; }
   updateCambiosBadge(matchData? matchData.matches.length : 0, pendingIn);
 }
 function updateCambiosBadge(nMatches, nPending){
@@ -1063,33 +1076,52 @@ function fmtTime(ts){
   if(d.toDateString()===now.toDateString()) return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
   return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
+function imgOf(id){ const f=findSticker(id); return f? f.sticker.img : ''; }
+function figGridHtml(ids){
+  return ids.map(id=>`<div class="deal-fig"><img loading="lazy" src="${imgOf(id)}" alt="${escapeHtml(codeOf(id))}"><div class="lbl">${escapeHtml(codeOf(id))}</div></div>`).join('') || '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);padding:6px;text-align:center">(nada)</div>';
+}
 function renderTradeCard(t){
-  const el=document.createElement('div'); el.className='trade'+(tradesExpanded.has(t.id)?' open':''); el.dataset.id=t.id;
+  const cls = ['trade', t.isOutgoing?'out':'in'];
+  if(tradesExpanded.has(t.id)) cls.push('open');
+  const unread = !t.isOutgoing && t.status==='pending';
+  if(unread) cls.push('unread');
+  const el=document.createElement('div'); el.className=cls.join(' '); el.dataset.id=t.id;
   // From MY perspective: if outgoing, t.gives are what I give; if incoming, t.gives are what THEY give me (i.e. I receive)
   const meGives = t.isOutgoing ? t.gives : t.takes;
   const meTakes = t.isOutgoing ? t.takes : t.gives;
   const dirIcon = t.isOutgoing ? '↗' : '↙';
-  const dirLbl  = t.isOutgoing ? 'Le enviaste a' : 'Te envió';
+  const dirLbl  = t.isOutgoing ? 'Enviada' : 'Recibida';
   const myConfirmed = (t.completedBy||[]).includes(userKey);
   const peerConfirmed = (t.completedBy||[]).some(k=>k!==userKey);
+  const closed = ['completed','cancelled','rejected'].includes(t.status);
   el.innerHTML = `
     <div class="trade-head">
       <div class="trade-av">${escapeHtml(initials(t.peer.display))}</div>
       <div class="trade-meta">
         <div class="trade-line">${dirIcon} <span>${escapeHtml(t.peer.display)}</span> <span class="tstatus ${t.status}">${STATUS_LABEL[t.status]||t.status}</span></div>
-        <div class="trade-sub"><span class="dir">${dirLbl}</span> · vos das ${meGives.length} · recibís ${meTakes.length} · ${fmtTime(t.updated)}</div>
+        <div class="trade-sub">
+          <span class="dir">${dirLbl} · ${fmtTime(t.updated)}</span>
+          <span class="pill give"><b>${meGives.length}</b> das</span>
+          <span class="pill take"><b>${meTakes.length}</b> recibís</span>
+        </div>
       </div>
       <span class="match-arrow">›</span>
     </div>
     <div class="trade-body">
-      <div class="trade-lists">
-        <div class="trade-listrow"><span class="lbl give">Vos le das</span><div class="trade-codes">${meGives.map(id=>`<span class="tcode">${escapeHtml(codeOf(id))}</span>`).join('')||'<span class="dir">(nada)</span>'}</div></div>
-        <div class="trade-listrow"><span class="lbl take">${t.isOutgoing?'Él te da':'Él te da'}</span><div class="trade-codes">${meTakes.map(id=>`<span class="tcode">${escapeHtml(codeOf(id))}</span>`).join('')||'<span class="dir">(nada)</span>'}</div></div>
+      <div class="trade-deal">
+        <div class="deal-side give">
+          <div class="deal-h"><span>↗</span> Vos le das <span class="num">${meGives.length}</span></div>
+          <div class="deal-grid">${figGridHtml(meGives)}</div>
+        </div>
+        <div class="deal-side take">
+          <div class="deal-h"><span>↙</span> ${escapeHtml(t.peer.display)} te da <span class="num">${meTakes.length}</span></div>
+          <div class="deal-grid">${figGridHtml(meTakes)}</div>
+        </div>
       </div>
       <div class="chatbox" data-chat></div>
       <form class="chat-form" data-chatform>
-        <input type="text" maxlength="500" placeholder="Mensaje…" data-chatinput ${t.status==='completed'||t.status==='cancelled'||t.status==='rejected'?'disabled':''}>
-        <button type="submit" ${t.status==='completed'||t.status==='cancelled'||t.status==='rejected'?'disabled':''}>Enviar</button>
+        <input type="text" maxlength="500" placeholder="Escribí un mensaje…" data-chatinput ${closed?'disabled':''}>
+        <button type="submit" ${closed?'disabled':''}>Enviar</button>
       </form>
       <div class="trade-actions"></div>
     </div>`;
