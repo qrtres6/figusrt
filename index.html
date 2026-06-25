@@ -232,6 +232,66 @@ body::before{
 .empty-matches .big{font-size:40px;margin-bottom:8px}
 .match-loading{color:var(--muted);font-size:14px;text-align:center;padding:20px 10px}
 
+/* TRADES (propuestas con chat) */
+.trades-sec{margin-bottom:22px}
+.trades-sec h2{margin:0 0 4px;font-family:'Archivo Black';font-size:18px}
+.trades-sec .lead{color:var(--muted);font-size:13.5px;margin:0 0 12px}
+.trade{background:#f9f4e6;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.trade-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.trade-head:hover{background:#f1ebd9}
+.trade-av{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:13px;flex:none;letter-spacing:.02em}
+.trade-meta{flex:1;min-width:0}
+.trade-line{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.trade-line .dir{color:var(--muted);font-weight:500;font-size:12.5px}
+.trade-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.tstatus{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;font-family:'Barlow'}
+.tstatus.pending{background:#fbe6c6;color:#9a6b16}
+.tstatus.accepted{background:#cfeadc;color:#1b6c40}
+.tstatus.half_completed{background:#cfe4fb;color:#1b487d}
+.tstatus.completed{background:var(--green);color:#fff}
+.tstatus.rejected,.tstatus.cancelled{background:#e2dccc;color:#666}
+.trade.open .match-arrow{transform:rotate(90deg)}
+.trade-body{display:none;padding:6px 14px 14px;border-top:1px solid var(--line);background:#fdfaef}
+.trade.open .trade-body{display:block}
+.trade-lists{margin:8px 0 12px}
+.trade-listrow{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.trade-listrow .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;min-width:90px}
+.trade-listrow .lbl.give{color:var(--orange)}
+.trade-listrow .lbl.take{color:var(--green)}
+.trade-codes{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}
+.tcode{background:#efe9da;border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;cursor:pointer}
+.tcode:hover{background:#e2dcc5}
+.tcode.mini{font-size:11px;padding:2px 6px}
+
+.chatbox{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px;margin:8px 0 10px;max-height:240px;overflow-y:auto}
+.chatempty{color:var(--muted);font-size:12.5px;text-align:center;padding:8px}
+.msg{margin-bottom:8px;display:flex}
+.msg.me{justify-content:flex-end}
+.msg .bubble{max-width:80%;padding:7px 11px;border-radius:13px;font-size:13.5px;line-height:1.35;word-break:break-word}
+.msg.me .bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.msg.them .bubble{background:#efe9da;color:var(--ink);border-bottom-left-radius:4px}
+.msg .time{font-size:10.5px;color:var(--muted);margin-top:2px;text-align:right;padding:0 4px}
+.chat-form{display:flex;gap:6px}
+.chat-form input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;font-family:'Barlow';outline:none;background:#fff}
+.chat-form input:focus{border-color:var(--blue)}
+.chat-form button{flex:none;border:none;background:var(--blue);color:#fff;border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer;font-family:'Barlow';font-size:14px}
+.chat-form button:disabled{opacity:.5;cursor:default}
+.trade-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.t-info{font-size:12.5px;color:var(--muted);flex:1;min-width:140px;align-self:center}
+.t-info b{color:var(--ink)}
+.t-info.warn{color:#9a6b16}
+.t-info.ok{color:var(--green)}
+.btn-danger{background:#e2dccc;color:var(--red)}
+.btn-danger:hover{background:#d5cdb8}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#268a4a}
+
+/* Send-proposal modal */
+.send-msg-row{margin:10px 0 4px}
+.send-msg-row label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
+.send-msg-row textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;font-family:'Barlow';resize:vertical;min-height:60px;outline:none;background:#fdfbf6}
+.send-msg-row textarea:focus{border-color:var(--blue);background:#fff}
+
 /* RESUMEN */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
 @media(min-width:560px){.stats{grid-template-columns:repeat(4,1fr)}}
@@ -399,11 +459,40 @@ body::before{
       <div class="cambios-head">
         <div>
           <h2>Cambios con otros usuarios</h2>
-          <p class="lead">Te muestro con quién tenés cambios mutuos: vos le das repes que le faltan, y él te da repes que te faltan.</p>
+          <p class="lead">Proponé un cambio: vos le das tus repes que le faltan y él te da las suyas que te faltan. Cuando se confirma el intercambio, el álbum de los dos se actualiza solo.</p>
         </div>
         <button class="btn btn-ghost" id="btnReloadMatches">↻ Actualizar</button>
       </div>
-      <div id="matchesList"></div>
+
+      <div class="trades-sec" id="tradesSec" style="display:none">
+        <h2>Tus propuestas</h2>
+        <p class="lead">Conversá con la otra persona, aceptá o rechazá, y cuando coordinen el cambio en persona, los dos tocan <b>Confirmar cambio</b> para actualizar el álbum.</p>
+        <div id="tradesList"></div>
+      </div>
+
+      <div id="matchesSection">
+        <h2 style="margin:18px 0 6px;font-family:'Archivo Black';font-size:18px">Posibles cambios</h2>
+        <p class="lead" style="margin:0 0 14px;color:var(--muted);font-size:13.5px">Usuarios donde encajan tus repes con sus faltantes (y al revés).</p>
+        <div id="matchesList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEND PROPOSAL MODAL -->
+  <div class="modal" id="sendModal">
+    <div class="modal-card">
+      <div class="mbody" style="padding:18px 20px 18px">
+        <h3 id="sendTitle">Enviar propuesta</h3>
+        <div class="msub" id="sendSub"></div>
+        <div class="send-msg-row">
+          <label>Mensaje (opcional)</label>
+          <textarea id="sendMsg" maxlength="500" placeholder="Hola! ¿Cambiamos estas figuritas?"></textarea>
+        </div>
+        <div class="match-actions" style="margin-top:14px;justify-content:flex-end">
+          <button class="btn btn-ghost" id="sendCancel">Cancelar</button>
+          <button class="btn btn-primary" id="sendGo">Enviar</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -787,19 +876,24 @@ async function loadMatches(force){
   finally{ matchLoading=false; }
 }
 async function renderCambios(){
+  // Trades (your proposals) + matches (suggested swaps), in parallel.
+  if(!tradesData) $("#tradesList").innerHTML='';
+  if(!matchData)  $("#matchesList").innerHTML='<div class="match-loading">Buscando coincidencias…</div>';
+  await Promise.all([loadTrades(false), loadMatches(false)]);
+  renderTrades();
+  renderMatchesOnly();
+}
+function renderMatchesOnly(){
   const box=$("#matchesList");
-  if(!matchData){ box.innerHTML='<div class="match-loading">Buscando coincidencias…</div>'; }
-  const d = await loadMatches(false);
-  if(!d){ box.innerHTML='<div class="empty-matches"><div class="big">⚠️</div>No se pudieron cargar los cambios. Probá <b>Actualizar</b>.</div>'; updateCambiosBadge(0); return; }
+  const d=matchData;
+  if(!d){ box.innerHTML='<div class="empty-matches"><div class="big">⚠️</div>No se pudieron cargar los cambios. Probá <b>Actualizar</b>.</div>'; return; }
   if(!d.matches.length){
-    box.innerHTML='<div class="empty-matches"><div class="big">🤝</div><b>Todavía no hay cambios disponibles.</b><br>Cuando otro usuario tenga repes que vos necesitás (y vice versa), aparecen acá.</div>';
-    updateCambiosBadge(0); return;
+    box.innerHTML='<div class="empty-matches"><div class="big">🤝</div><b>Todavía no hay coincidencias.</b><br>Cuando otro usuario tenga repes que vos necesitás (y al revés), aparece acá.</div>';
+    return;
   }
-  updateCambiosBadge(d.matches.length);
   box.innerHTML='';
   d.matches.forEach(m=>box.appendChild(renderMatchCard(m)));
 }
-function updateCambiosBadge(n){ const b=$("#bCambios"); if(b){ b.textContent = n? n : '·'; b.style.background = n? 'var(--green)' : '#bdb9a8'; } }
 function findSticker(id){ for(const t of DATA.teams){ for(const s of t.stickers){ if(s.id===id) return {sticker:s,team:t}; } } return null; }
 function makeSwapCard(id,side,otherKey){
   const f=findSticker(id); const card=document.createElement('div');
@@ -849,7 +943,7 @@ function renderMatchCard(m){
         <span class="summary">Tocá las figuritas que querés cambiar.</span>
         <button class="btn btn-ghost" data-act="all">Tildar todas</button>
         <button class="btn btn-ghost" data-act="none">Limpiar</button>
-        <button class="btn btn-primary" data-act="share">Compartir propuesta</button>
+        <button class="btn btn-primary" data-act="send">Enviar propuesta</button>
       </div>
     </div>`;
   const gridGives=el.querySelector('[data-side="gives"]');
@@ -873,31 +967,216 @@ function renderMatchCard(m){
     el.querySelectorAll('.swap-card').forEach(c=>c.classList.remove('on'));
     updateMatchSummary(m.key);
   });
-  el.querySelector('[data-act="share"]').addEventListener('click',()=>shareMatch(m));
+  el.querySelector('[data-act="send"]').addEventListener('click',()=>openSendModal(m));
   updateMatchSummary(m.key);
   return el;
 }
 function codeOf(id){ const f=findSticker(id); return f? f.sticker.code : id; }
-function shareMatch(m){
+
+/* ------- send-proposal modal ------- */
+let pendingProposal=null;
+function openSendModal(m){
   const picks=getPicks(m.key);
-  const give = (picks.gives.size? Array.from(picks.gives) : m.gives).map(codeOf);
-  const take = (picks.takes.size? Array.from(picks.takes) : m.takes).map(codeOf);
-  const lines = [
-    `Propuesta de cambio — Mundial 2026`,
-    `${userName} ⇄ ${m.display}`,
-    ``,
-    `Yo le doy (${give.length}): ${give.join(', ')}`,
-    `Él me da (${take.length}): ${take.join(', ')}`,
-  ];
-  const text = lines.join('\n');
-  if(navigator.share){ navigator.share({title:'Propuesta de cambio',text}).catch(()=>{}); return; }
-  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>toast('📋 Propuesta copiada')).catch(()=>fallbackCopy(text)); return; }
-  fallbackCopy(text);
+  const gives = picks.gives.size? Array.from(picks.gives) : m.gives.slice();
+  const takes = picks.takes.size? Array.from(picks.takes) : m.takes.slice();
+  if(!gives.length || !takes.length){ toast('Elegí al menos una figurita de cada lado'); return; }
+  pendingProposal = { toKey:m.key, toDisplay:m.display, gives, takes };
+  $("#sendTitle").textContent = 'Enviar propuesta a ' + m.display;
+  $("#sendSub").textContent = `Vos le das ${gives.length} · Él te da ${takes.length}`;
+  $("#sendMsg").value = '';
+  $("#sendModal").classList.add('on');
+  setTimeout(()=>$("#sendMsg").focus(),100);
 }
-function fallbackCopy(text){
-  const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
-  try{ document.execCommand('copy'); toast('📋 Propuesta copiada'); }catch(e){ alert(text); }
-  finally{ document.body.removeChild(ta); }
+$("#sendCancel").addEventListener('click',()=>$("#sendModal").classList.remove('on'));
+$("#sendModal").addEventListener('click',e=>{ if(e.target===$("#sendModal")) $("#sendModal").classList.remove('on'); });
+$("#sendGo").addEventListener('click',async()=>{
+  if(!pendingProposal) return;
+  const btn=$("#sendGo"); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    const r=await fetch('/api/trades',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+      body:JSON.stringify({toKey:pendingProposal.toKey,gives:pendingProposal.gives,takes:pendingProposal.takes,message:$("#sendMsg").value})});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok){ toast(data.error||'Error al enviar'); return; }
+    $("#sendModal").classList.remove('on');
+    toast('✓ Propuesta enviada');
+    // Reset picks and reload trades+matches
+    matchPicks.delete(pendingProposal.toKey);
+    pendingProposal=null;
+    tradesData=null; matchData=null;
+    await renderCambios();
+  }catch(e){ toast('Sin conexión'); }
+  finally{ btn.disabled=false; btn.textContent='Enviar'; }
+});
+
+/* ------- trades (propuestas) ------- */
+let tradesData=null, tradesLoading=false;
+const tradesExpanded = new Set();
+async function loadTrades(force){
+  if(tradesLoading) return tradesData;
+  if(tradesData && !force) return tradesData;
+  tradesLoading=true;
+  try{
+    const r=await fetch('/api/trades?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+authToken}});
+    if(r.status===401){ logout(); return null; }
+    if(!r.ok) throw new Error('http '+r.status);
+    tradesData = await r.json();
+    return tradesData;
+  }catch(e){ console.error('trades load',e); return null; }
+  finally{ tradesLoading=false; }
+}
+function renderTrades(){
+  const sec=$("#tradesSec"), box=$("#tradesList");
+  const d=tradesData;
+  if(!d || !d.trades || !d.trades.length){ sec.style.display='none'; updateCambiosBadge(matchData? matchData.matches.length : 0, 0); return; }
+  // Show open + recently closed
+  const isOpen = t => ['pending','accepted','half_completed'].includes(t.status);
+  const open = d.trades.filter(isOpen);
+  const closed = d.trades.filter(t=>!isOpen(t)).slice(0,5);
+  const all = open.concat(closed);
+  sec.style.display='block';
+  box.innerHTML='';
+  all.forEach(t=>box.appendChild(renderTradeCard(t)));
+  // pending received that I haven't seen yet → badge
+  const pendingIn = d.trades.filter(t=>t.status==='pending' && !t.isOutgoing).length;
+  updateCambiosBadge(matchData? matchData.matches.length : 0, pendingIn);
+}
+function updateCambiosBadge(nMatches, nPending){
+  const b=$("#bCambios"); if(!b) return;
+  if(nPending>0){ b.textContent=nPending; b.style.background='var(--red)'; b.title=nPending+' propuesta(s) pendiente(s)'; }
+  else if(nMatches>0){ b.textContent=nMatches; b.style.background='var(--green)'; b.title=''; }
+  else { b.textContent='·'; b.style.background='#bdb9a8'; b.title=''; }
+}
+const STATUS_LABEL = {
+  pending:'Pendiente', accepted:'Aceptada', half_completed:'Falta confirmar',
+  completed:'Completada', rejected:'Rechazada', cancelled:'Cancelada'
+};
+function fmtTime(ts){
+  const d = new Date(ts), now=new Date();
+  if(d.toDateString()===now.toDateString()) return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+function renderTradeCard(t){
+  const el=document.createElement('div'); el.className='trade'+(tradesExpanded.has(t.id)?' open':''); el.dataset.id=t.id;
+  // From MY perspective: if outgoing, t.gives are what I give; if incoming, t.gives are what THEY give me (i.e. I receive)
+  const meGives = t.isOutgoing ? t.gives : t.takes;
+  const meTakes = t.isOutgoing ? t.takes : t.gives;
+  const dirIcon = t.isOutgoing ? '↗' : '↙';
+  const dirLbl  = t.isOutgoing ? 'Le enviaste a' : 'Te envió';
+  const myConfirmed = (t.completedBy||[]).includes(userKey);
+  const peerConfirmed = (t.completedBy||[]).some(k=>k!==userKey);
+  el.innerHTML = `
+    <div class="trade-head">
+      <div class="trade-av">${escapeHtml(initials(t.peer.display))}</div>
+      <div class="trade-meta">
+        <div class="trade-line">${dirIcon} <span>${escapeHtml(t.peer.display)}</span> <span class="tstatus ${t.status}">${STATUS_LABEL[t.status]||t.status}</span></div>
+        <div class="trade-sub"><span class="dir">${dirLbl}</span> · vos das ${meGives.length} · recibís ${meTakes.length} · ${fmtTime(t.updated)}</div>
+      </div>
+      <span class="match-arrow">›</span>
+    </div>
+    <div class="trade-body">
+      <div class="trade-lists">
+        <div class="trade-listrow"><span class="lbl give">Vos le das</span><div class="trade-codes">${meGives.map(id=>`<span class="tcode">${escapeHtml(codeOf(id))}</span>`).join('')||'<span class="dir">(nada)</span>'}</div></div>
+        <div class="trade-listrow"><span class="lbl take">${t.isOutgoing?'Él te da':'Él te da'}</span><div class="trade-codes">${meTakes.map(id=>`<span class="tcode">${escapeHtml(codeOf(id))}</span>`).join('')||'<span class="dir">(nada)</span>'}</div></div>
+      </div>
+      <div class="chatbox" data-chat></div>
+      <form class="chat-form" data-chatform>
+        <input type="text" maxlength="500" placeholder="Mensaje…" data-chatinput ${t.status==='completed'||t.status==='cancelled'||t.status==='rejected'?'disabled':''}>
+        <button type="submit" ${t.status==='completed'||t.status==='cancelled'||t.status==='rejected'?'disabled':''}>Enviar</button>
+      </form>
+      <div class="trade-actions"></div>
+    </div>`;
+  // Chat render
+  const chat = el.querySelector('[data-chat]');
+  renderMessages(chat, t.messages);
+  // Chat send
+  el.querySelector('[data-chatform]').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const inp = el.querySelector('[data-chatinput]');
+    const text = inp.value.trim();
+    if(!text) return;
+    inp.disabled=true;
+    const r = await tradeAction(t.id, 'message', { text });
+    inp.value=''; inp.disabled=false;
+    if(r){ updateTradeInList(r); inp.focus(); }
+  });
+  // Header expand
+  el.querySelector('.trade-head').addEventListener('click',()=>{
+    if(tradesExpanded.has(t.id)){ tradesExpanded.delete(t.id); el.classList.remove('open'); }
+    else { tradesExpanded.add(t.id); el.classList.add('open'); const c=el.querySelector('[data-chat]'); c.scrollTop=c.scrollHeight; }
+  });
+  // Actions
+  const actions = el.querySelector('.trade-actions');
+  renderTradeActions(actions, t, myConfirmed, peerConfirmed);
+  return el;
+}
+function renderMessages(box, msgs){
+  if(!msgs || !msgs.length){ box.innerHTML='<div class="chatempty">No hay mensajes todavía.</div>'; return; }
+  box.innerHTML='';
+  msgs.forEach(m=>{
+    const wrap=document.createElement('div'); wrap.className='msg '+(m.from===userKey?'me':'them');
+    wrap.innerHTML=`<div><div class="bubble">${escapeHtml(m.text)}</div><div class="time">${fmtTime(m.at)}</div></div>`;
+    box.appendChild(wrap);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+function renderTradeActions(box, t, myConfirmed, peerConfirmed){
+  box.innerHTML='';
+  const info=document.createElement('span'); info.className='t-info';
+  if(t.status==='pending'){
+    if(t.isOutgoing){
+      info.innerHTML = 'Esperando respuesta…';
+      const cancel=document.createElement('button'); cancel.className='btn btn-danger'; cancel.textContent='Cancelar propuesta';
+      cancel.onclick = async ()=>{ if(!confirm('¿Cancelar esta propuesta?'))return; const r=await tradeAction(t.id,'cancel'); if(r) updateTradeInList(r); };
+      box.appendChild(info); box.appendChild(cancel);
+    } else {
+      info.innerHTML = '¿Aceptás el cambio?';
+      const acc=document.createElement('button'); acc.className='btn btn-success'; acc.textContent='Aceptar';
+      acc.onclick = async ()=>{ const r=await tradeAction(t.id,'accept'); if(r){ updateTradeInList(r); toast('✓ Aceptaste el cambio'); } };
+      const rej=document.createElement('button'); rej.className='btn btn-danger'; rej.textContent='Rechazar';
+      rej.onclick = async ()=>{ if(!confirm('¿Rechazar la propuesta?'))return; const r=await tradeAction(t.id,'reject'); if(r) updateTradeInList(r); };
+      box.appendChild(info); box.appendChild(acc); box.appendChild(rej);
+    }
+  } else if(t.status==='accepted' || t.status==='half_completed'){
+    if(myConfirmed){ info.className='t-info warn'; info.innerHTML = '<b>Esperando a '+escapeHtml(t.peer.display)+'</b> para que confirme el cambio.'; box.appendChild(info); }
+    else {
+      info.innerHTML = 'Cuando se hayan intercambiado las figuritas en persona, tocá <b>Confirmar cambio</b>. El álbum de los dos se actualiza solo cuando ambos confirmen.';
+      const conf=document.createElement('button'); conf.className='btn btn-success'; conf.textContent='Confirmar cambio';
+      conf.onclick = async ()=>{
+        if(!confirm('¿Ya hicieron el cambio? Esto va a sumar las figuritas que recibiste y a sacar las que entregaste.'))return;
+        const r=await tradeAction(t.id,'complete');
+        if(r){ updateTradeInList(r); if(r.applied){ toast('✓ Cambio aplicado a tu álbum'); await refreshProgressFromServer(); } else toast('✓ Confirmaste. Falta el otro.'); }
+      };
+      box.appendChild(info); box.appendChild(conf);
+    }
+  } else {
+    if(t.status==='completed') info.innerHTML = '<b class="ok">Cambio completado ✓</b>';
+    else if(t.status==='rejected') info.innerHTML = 'Propuesta rechazada.';
+    else if(t.status==='cancelled') info.innerHTML = 'Propuesta cancelada.';
+    box.appendChild(info);
+  }
+}
+async function tradeAction(id, action, extra){
+  try{
+    const body = Object.assign({id, action}, extra||{});
+    const r = await fetch('/api/trade',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},body:JSON.stringify(body)});
+    if(r.status===401){ logout(); return null; }
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok){ toast(data.error||'Error'); return null; }
+    return data;
+  }catch(e){ toast('Sin conexión'); return null; }
+}
+function updateTradeInList(resp){
+  if(!resp || !resp.trade) return;
+  if(!tradesData) tradesData={trades:[]};
+  const i = tradesData.trades.findIndex(t=>t.id===resp.trade.id);
+  if(i>=0) tradesData.trades[i] = resp.trade; else tradesData.trades.unshift(resp.trade);
+  renderTrades();
+  // After applying a trade, the match list may change too.
+  if(resp.applied){ matchData=null; renderMatchesOnly(); }
+}
+async function refreshProgressFromServer(){
+  const sp=await serverGetProgress();
+  if(sp){ applyProgress(sp); writeLocal(); renderAll(); }
 }
 
 /* ---------- RESUMEN ---------- */
@@ -944,7 +1223,21 @@ function renderTab(name){
   else if(name==="resumen")renderResumen();
 }
 $$(".tab").forEach(t=>t.addEventListener("click",()=>setTab(t.dataset.tab)));
-$("#btnReloadMatches").addEventListener('click',async()=>{ matchData=null; await renderCambios(); toast('Actualizado'); });
+$("#btnReloadMatches").addEventListener('click',async()=>{ matchData=null; tradesData=null; await renderCambios(); toast('Actualizado'); });
+
+/* Light polling while user is on the Cambios tab — fresh chat + status. */
+let tradesPollT=null;
+function startTradesPoll(){
+  stopTradesPoll();
+  tradesPollT = setInterval(async ()=>{
+    if(curTab!=='cambios' || document.hidden || !authToken) return;
+    const prev = JSON.stringify(tradesData||{});
+    tradesData=null; await loadTrades(true);
+    if(JSON.stringify(tradesData||{}) !== prev) renderTrades();
+  }, 12000);
+}
+function stopTradesPoll(){ if(tradesPollT){ clearInterval(tradesPollT); tradesPollT=null; } }
+window.addEventListener('visibilitychange',()=>{ if(!document.hidden && curTab==='cambios'){ tradesData=null; loadTrades(true).then(renderTrades); } });
 
 /* ---------- modal ---------- */
 let modalId=null;
@@ -1058,6 +1351,8 @@ async function serverGetProgress(){
 function showAuth(){ $("#auth").style.display='flex'; $("#appWrap").style.display='none'; }
 function showApp(){ $("#auth").style.display='none'; $("#appWrap").style.display='block'; }
 async function logout(){
+  stopTradesPoll();
+  matchData=null; tradesData=null; matchExpanded.clear(); matchPicks.clear(); tradesExpanded.clear();
   authToken=null; userName=null; userKey=null;
   localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY); localStorage.removeItem(NK_KEY);
   state={counts:{},names:{},flags:{},showCodes:true,ts:0};
@@ -1079,6 +1374,9 @@ async function startApp(){
   $("#acct").innerHTML='👤 '+escapeHtml(userName||'')+' · <button id="logoutBtn" class="linkbtn">Salir</button>';
   $("#logoutBtn").addEventListener('click', logout);
   renderAll();
+  startTradesPoll();
+  // Load trades early so the "Cambios" tab badge reflects pending received proposals.
+  loadTrades(true).then(()=>renderTrades());
   // 2) reconcile with server by timestamp — never let it wipe newer local data
   const sp=await serverGetProgress();
   if(sp){
