@@ -620,6 +620,14 @@ async function syncToServer(){
   }
 }
 window.addEventListener('online', ()=>{ if(authToken && pendingSync) syncToServer(); });
+// Warn before closing if there are unsynced changes (browsers show a generic message).
+window.addEventListener('beforeunload', (e)=>{
+  if(pendingSync){ e.preventDefault(); e.returnValue=''; return ''; }
+});
+// On page hide (mobile background), try one last sync.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden && authToken && pendingSync){ syncToServer(); }
+});
 const cnt = id => state.counts[id]||0;
 function setCnt(id,n){ n=Math.max(0,n|0); if(n) state.counts[id]=n; else delete state.counts[id]; save(); }
 function teamName(t){ return state.names[t.code]||t.name; }
@@ -1319,12 +1327,50 @@ $("#btnExport").addEventListener("click",()=>{
 $("#btnImportProg").addEventListener("click",()=>$("#fileProg").click());
 $("#fileProg").addEventListener("change",e=>{
   const f=e.target.files[0]; e.target.value=""; if(!f)return;
-  const rd=new FileReader(); rd.onload=()=>{try{const o=JSON.parse(rd.result);if(o.counts)state.counts=o.counts;if(o.names)state.names=o.names;save();renderAll();toast("Progreso importado");}catch(err){toast("Archivo inválido");}};
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const o=JSON.parse(rd.result);
+      if(!o || typeof o!=='object') throw new Error('bad');
+      const newCounts = (o.counts && typeof o.counts==='object') ? o.counts : {};
+      const newNames  = (o.names  && typeof o.names==='object')  ? o.names  : {};
+      const newHave   = Object.keys(newCounts).length;
+      const curStats  = stats();
+      // If there's local progress, MERGE by default (don't lose anything).
+      // Only let user fully replace with explicit confirmation.
+      if(curStats.have>0){
+        const merged = mergeProgress(
+          {counts:state.counts,names:state.names,ts:state.ts||0},
+          {counts:newCounts,names:newNames,ts:Date.now()}
+        );
+        const after = Object.keys(merged.counts).length;
+        const added = after - curStats.have;
+        if(!confirm(`Importar progreso: vas a sumar ${Math.max(0,added)} figuritas a tu álbum (las que ya tenés se mantienen).\n\n¿Continuar?`)) return;
+        state.counts = merged.counts; state.names = merged.names;
+      } else {
+        state.counts = newCounts; state.names = newNames;
+      }
+      save(); renderAll(); toast("Progreso importado");
+    }catch(err){ toast("Archivo inválido"); }
+  };
   rd.readAsText(f);
 });
 $("#btnReset").addEventListener("click",async()=>{
-  if(!confirm("¿Borrar todo tu progreso y fotos? Esto no se puede deshacer."))return;
-  state={counts:{},names:{},flags:{},showCodes:true}; save();
+  const st=stats();
+  if(st.have===0 && Object.keys(state.names||{}).length===0){
+    if(!confirm('¿Reiniciar el álbum?')) return;
+  } else {
+    // First: silently download a backup so nothing is ever truly lost.
+    try{
+      const blob=new Blob([JSON.stringify({counts:state.counts,names:state.names,when:new Date().toISOString(),autoBackup:true})],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='backup-antes-de-reiniciar-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+    }catch(e){}
+    const msg = `Vas a BORRAR todo tu progreso:\n• ${st.have} figuritas marcadas\n• ${st.repes} repes\nTe descargué un backup por si te arrepentís.\n\nEscribí BORRAR (en mayúscula) para continuar:`;
+    const typed = prompt(msg);
+    if(typed!=='BORRAR'){ toast('Cancelado — no se borró nada'); return; }
+  }
+  state={counts:{},names:{},flags:{},showCodes:true,ts:Date.now()}; save();
   const keys=await photoKeys(); for(const k of keys){delete customCache[k];await photoDel(k);}
   renderAll(); toast("Álbum reiniciado");
 });
@@ -1339,6 +1385,28 @@ function applyProgress(p){
   if(p && typeof p.showCodes==='boolean') state.showCodes=p.showCodes;
   state.ts = (p && typeof p.ts==='number') ? p.ts : 0;
 }
+// MERGE-friendly reconciliation: never lose a sticker that exists on either side.
+// counts → max per id (mantiene la mejor versión).
+// names  → unión, server gana en conflictos (más reciente en general).
+function mergeProgress(local, server){
+  const out = {counts:{}, names:{}, showCodes: !!(local.showCodes||server.showCodes), ts: Math.max(local.ts||0, server.ts||0)};
+  const ids = new Set([...Object.keys(local.counts||{}), ...Object.keys(server.counts||{})]);
+  for(const id of ids){
+    const a=(local.counts||{})[id]||0, b=(server.counts||{})[id]||0;
+    const v=Math.max(a,b); if(v>0) out.counts[id]=v;
+  }
+  out.names = Object.assign({}, local.names||{}, server.names||{});
+  return out;
+}
+function progressDiffers(a,b){
+  const aC=a.counts||{}, bC=b.counts||{};
+  const ks=new Set([...Object.keys(aC),...Object.keys(bC)]);
+  for(const k of ks) if((aC[k]||0)!==(bC[k]||0)) return true;
+  const aN=a.names||{}, bN=b.names||{};
+  const nks=new Set([...Object.keys(aN),...Object.keys(bN)]);
+  for(const k of nks) if(aN[k]!==bN[k]) return true;
+  return false;
+}
 async function serverGetProgress(){
   if(!authToken) return null;
   try{
@@ -1352,16 +1420,15 @@ function showAuth(){ $("#auth").style.display='flex'; $("#appWrap").style.displa
 function showApp(){ $("#auth").style.display='none'; $("#appWrap").style.display='block'; }
 async function logout(){
   stopTradesPoll();
+  // If there are unsaved changes, give the user a chance to wait until they sync.
+  if(pendingSync && !confirm('Tenés cambios sin guardar. ¿Salir igual? (puede que pierdas lo último)')) return;
   matchData=null; tradesData=null; matchExpanded.clear(); matchPicks.clear(); tradesExpanded.clear();
   authToken=null; userName=null; userKey=null;
   localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY); localStorage.removeItem(NK_KEY);
   state={counts:{},names:{},flags:{},showCodes:true,ts:0};
   pendingSync=false;
-  // Wipe per-device custom photos so the next user on this device doesn't see them.
-  try{
-    const keys=await photoKeys();
-    for(const k of keys){ delete customCache[k]; await photoDel(k); }
-  }catch(e){}
+  // NOTE: keep custom photos in IndexedDB. If a DIFFERENT user logs in next,
+  // authSubmit() wipes them; if the same user comes back, photos are preserved.
   $("#syncStatus").className='sync'; $("#syncStatus").textContent='';
   showAuth();
 }
@@ -1377,17 +1444,18 @@ async function startApp(){
   startTradesPoll();
   // Load trades early so the "Cambios" tab badge reflects pending received proposals.
   loadTrades(true).then(()=>renderTrades());
-  // 2) reconcile with server by timestamp — never let it wipe newer local data
+  // 2) Reconcile with server by MERGING — never drop a sticker that exists on either side.
   const sp=await serverGetProgress();
   if(sp){
-    const serverTs=(typeof sp.ts==='number')?sp.ts:0;
-    const localCount=Object.keys(state.counts||{}).length;        // local (ya aplicado del cache)
-    const serverCount=Object.keys((sp.counts)||{}).length;
-    if(serverTs>localTs || (serverTs===localTs && serverCount>localCount)){
-      applyProgress(sp); writeLocal(); renderAll();               // server gana (otro dispositivo o más datos)
-    } else if(localTs>serverTs || (serverTs===localTs && localCount>serverCount)){
-      syncToServer();                                              // local gana → subirlo
-    }
+    const localSnap = {counts: state.counts, names: state.names, showCodes: state.showCodes, ts: state.ts};
+    const serverSnap = {counts: sp.counts||{}, names: sp.names||{}, showCodes: !!sp.showCodes, ts: sp.ts||0};
+    const merged = mergeProgress(localSnap, serverSnap);
+    const changedFromLocal  = progressDiffers(localSnap, merged);
+    const changedFromServer = progressDiffers(serverSnap, merged);
+    applyProgress(merged); state.ts = Math.max(state.ts, Date.now());  // ensure merged ts will beat both in next write
+    writeLocal();
+    if(changedFromLocal)  renderAll();        // we picked up new stickers from the server
+    if(changedFromServer) syncToServer();     // we contributed local-only stickers → push the merged result
   }
 }
 

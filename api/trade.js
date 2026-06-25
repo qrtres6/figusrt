@@ -1,4 +1,4 @@
-import { authKey, getTrade, updateTrade, adjustProgress, getUser, readBody, dbErrorResponse } from '../lib/store.js';
+import { authKey, getTrade, updateTrade, adjustProgress, completeTradeAtomic, getUser, readBody, dbErrorResponse } from '../lib/store.js';
 
 // POST /api/trade  { id, action, text? }
 //   action: 'accept' (only to_key, when pending) -> status=accepted
@@ -58,23 +58,19 @@ export default async function handler(req, res) {
       return res.status(200).json({ trade: await serialize(t2, me) });
     }
     if (action === 'complete') {
-      if (t.status !== 'accepted' && t.status !== 'half_completed')
-        return res.status(409).json({ error: 'Para completar, la propuesta debe estar aceptada.' });
-      const cb = new Set(t.completed_by || []);
-      cb.add(me);
-      if (cb.size < 2) {
-        // first one confirmed; needs the other to also confirm
-        const t2 = await updateTrade(tid, { status: 'half_completed', completed_by: Array.from(cb) });
-        return res.status(200).json({ trade: await serialize(t2, me), waitingPeer: true });
+      const r = await completeTradeAtomic(tid, me);
+      if (r.error === 'wrong_status') return res.status(409).json({ error: 'Para completar, la propuesta debe estar aceptada.' });
+      if (r.error === 'missing_gives') {
+        return res.status(409).json({ error: 'El proponente ya no tiene algunas de las figuritas prometidas. Cancelá la propuesta y armá una nueva.' });
       }
-      // Both confirmed → apply the swap to both progresses.
-      const fromDelta = {}, toDelta = {};
-      for (const id2 of t.gives) { fromDelta[id2] = (fromDelta[id2] || 0) - 1; toDelta[id2] = (toDelta[id2] || 0) + 1; }
-      for (const id2 of t.takes) { toDelta[id2]   = (toDelta[id2]   || 0) - 1; fromDelta[id2] = (fromDelta[id2] || 0) + 1; }
-      await adjustProgress(t.from_key, fromDelta);
-      await adjustProgress(t.to_key,   toDelta);
-      const t2 = await updateTrade(tid, { status: 'completed', completed_by: Array.from(cb) });
-      return res.status(200).json({ trade: await serialize(t2, me), applied: true });
+      if (r.error === 'missing_takes') {
+        return res.status(409).json({ error: 'El otro usuario ya no tiene algunas de las figuritas prometidas. Cancelá la propuesta y armá una nueva.' });
+      }
+      if (r.error) return res.status(400).json({ error: 'No se pudo completar' });
+      const trade = await serialize(r.trade, me);
+      if (r.applied) return res.status(200).json({ trade, applied: true });
+      if (r.alreadyDone) return res.status(200).json({ trade, alreadyDone: true });
+      return res.status(200).json({ trade, waitingPeer: true });
     }
     return res.status(400).json({ error: 'Acción desconocida' });
   } catch (e) {
