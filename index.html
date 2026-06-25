@@ -194,6 +194,44 @@ body::before{
 .repe-card .ctr button{width:24px;height:24px;border-radius:6px;border:none;background:#e0d9c6;font-size:15px;cursor:pointer;font-weight:700;line-height:1}
 .repe-card .ctr button:hover{background:#d2c9b1}
 
+/* CAMBIOS */
+.cambios-head{display:flex;align-items:flex-start;gap:14px;justify-content:space-between;margin-bottom:10px}
+.cambios-head h2{margin:0}
+.cambios-head .btn{flex:none}
+.match{background:#f4efe2;border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.match-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
+.match-head:hover{background:#ede6d2}
+.match-av{width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:14px;flex:none;letter-spacing:.03em}
+.match-meta{flex:1;min-width:0}
+.match-name{font-weight:700;font-size:15px}
+.match-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.match-sub b{color:var(--ink)}
+.match-arrow{color:var(--muted);font-size:18px;transition:.2s;flex:none}
+.match.open .match-arrow{transform:rotate(90deg)}
+.match-body{display:none;padding:6px 14px 14px;border-top:1px solid var(--line);background:#fbf8f0}
+.match.open .match-body{display:block}
+.swap-cols{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.swap-cols{grid-template-columns:1fr 1fr}}
+.swap-col h3{margin:8px 0;font-family:'Archivo Black';font-size:13.5px;letter-spacing:.04em}
+.swap-col h3 .c{color:var(--muted);font-weight:500;margin-left:5px;font-family:'Barlow';font-size:12px;text-transform:none;letter-spacing:0}
+.swap-col h3 .ic{font-size:14px;margin-right:4px}
+.swap-col.give h3{color:var(--orange)}
+.swap-col.take h3{color:var(--green)}
+.swap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+.swap-card{position:relative;aspect-ratio:449/561;border-radius:9px;overflow:hidden;cursor:pointer;background:#cfc7b2;box-shadow:var(--shadow-sm);transition:transform .08s}
+.swap-card:hover{transform:translateY(-1px)}
+.swap-card img{width:100%;height:100%;object-fit:cover;display:block}
+.swap-card .lbl{position:absolute;left:0;right:0;bottom:0;padding:8px 4px 4px;background:linear-gradient(transparent,rgba(0,0,0,.62));color:#fff;font-size:10.5px;font-weight:700;text-align:center;letter-spacing:.02em}
+.swap-card .pick{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.2);font-size:13px;display:flex;align-items:center;justify-content:center;color:transparent;transition:.15s;font-weight:900}
+.swap-card.on .pick{background:var(--green);border-color:var(--green);color:#fff}
+.swap-card.on{outline:2px solid var(--green);outline-offset:-1px}
+.match-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.match-actions .summary{font-size:13px;color:var(--muted);font-weight:600;flex:1;min-width:160px}
+.match-actions .summary b{color:var(--ink)}
+.empty-matches{text-align:center;color:var(--muted);padding:24px 10px;font-size:14px}
+.empty-matches .big{font-size:40px;margin-bottom:8px}
+.match-loading{color:var(--muted);font-size:14px;text-align:center;padding:20px 10px}
+
 /* RESUMEN */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
 @media(min-width:560px){.stats{grid-template-columns:repeat(4,1fr)}}
@@ -326,6 +364,7 @@ body::before{
     <button class="tab active" data-tab="album">Álbum</button>
     <button class="tab" data-tab="faltan">Faltan <span class="badge" id="bFaltan">0</span></button>
     <button class="tab" data-tab="repes">Repes <span class="badge" id="bRepes">0</span></button>
+    <button class="tab" data-tab="cambios">Cambios <span class="badge" id="bCambios">·</span></button>
     <button class="tab" data-tab="resumen">Resumen</button>
   </div>
 
@@ -351,6 +390,20 @@ body::before{
       <h2>Tus repetidas</h2>
       <p class="lead">Estas son las que tenés de más, listas para cambiar.</p>
       <div id="repesList"></div>
+    </div>
+  </div>
+
+  <!-- CAMBIOS TAB -->
+  <div id="tab-cambios" class="hidden">
+    <div class="panel">
+      <div class="cambios-head">
+        <div>
+          <h2>Cambios con otros usuarios</h2>
+          <p class="lead">Te muestro con quién tenés cambios mutuos: vos le das repes que le faltan, y él te da repes que te faltan.</p>
+        </div>
+        <button class="btn btn-ghost" id="btnReloadMatches">↻ Actualizar</button>
+      </div>
+      <div id="matchesList"></div>
     </div>
   </div>
 
@@ -583,7 +636,7 @@ function removeOne(id){
   const el=slotEl(id); if(el) refreshSlot(el,BY_ID[id]);
   afterChange();
 }
-function afterChange(){ renderHeader(); refreshStripCounts(); renderCats(); if(curTab!=="album") renderTab(curTab); }
+function afterChange(){ matchData=null; renderHeader(); refreshStripCounts(); renderCats(); if(curTab!=="album") renderTab(curTab); }
 
 /* ---------- categories ---------- */
 const CATS = DATA.cats || ["Selecciones"];
@@ -709,6 +762,144 @@ function renderRepes(){
   box.appendChild(grid);
 }
 
+/* ---------- CAMBIOS (matching) ---------- */
+let matchData=null, matchLoading=false, matchExpanded=new Set();
+function pickKey(otherKey,id){ return otherKey+':'+id; }
+const matchPicks = new Map();  // otherKey -> {gives:Set, takes:Set}
+function getPicks(otherKey){
+  if(!matchPicks.has(otherKey)) matchPicks.set(otherKey,{gives:new Set(),takes:new Set()});
+  return matchPicks.get(otherKey);
+}
+function initials(name){
+  return String(name||'?').trim().split(/\s+/).map(p=>p[0]||'').join('').slice(0,2).toUpperCase()||'?';
+}
+async function loadMatches(force){
+  if(matchLoading) return;
+  if(matchData && !force) return matchData;
+  matchLoading=true;
+  try{
+    const r=await fetch('/api/match?t='+Date.now(),{cache:'no-store',headers:{'Authorization':'Bearer '+authToken}});
+    if(r.status===401){ logout(); return null; }
+    if(!r.ok) throw new Error('http '+r.status);
+    matchData=await r.json();
+    return matchData;
+  }catch(e){ console.error('match error',e); return null; }
+  finally{ matchLoading=false; }
+}
+async function renderCambios(){
+  const box=$("#matchesList");
+  if(!matchData){ box.innerHTML='<div class="match-loading">Buscando coincidencias…</div>'; }
+  const d = await loadMatches(false);
+  if(!d){ box.innerHTML='<div class="empty-matches"><div class="big">⚠️</div>No se pudieron cargar los cambios. Probá <b>Actualizar</b>.</div>'; updateCambiosBadge(0); return; }
+  if(!d.matches.length){
+    box.innerHTML='<div class="empty-matches"><div class="big">🤝</div><b>Todavía no hay cambios disponibles.</b><br>Cuando otro usuario tenga repes que vos necesitás (y vice versa), aparecen acá.</div>';
+    updateCambiosBadge(0); return;
+  }
+  updateCambiosBadge(d.matches.length);
+  box.innerHTML='';
+  d.matches.forEach(m=>box.appendChild(renderMatchCard(m)));
+}
+function updateCambiosBadge(n){ const b=$("#bCambios"); if(b){ b.textContent = n? n : '·'; b.style.background = n? 'var(--green)' : '#bdb9a8'; } }
+function findSticker(id){ for(const t of DATA.teams){ for(const s of t.stickers){ if(s.id===id) return {sticker:s,team:t}; } } return null; }
+function makeSwapCard(id,side,otherKey){
+  const f=findSticker(id); const card=document.createElement('div');
+  card.className='swap-card'; card.dataset.id=id;
+  const code = f? f.sticker.code : id;
+  const img = f? f.sticker.img : '';
+  card.innerHTML=`<img loading="lazy" src="${img}" alt="${code}"><div class="lbl">${code}</div><div class="pick">✓</div>`;
+  card.addEventListener('click',()=>{
+    const picks=getPicks(otherKey);
+    const set = side==='gives'? picks.gives : picks.takes;
+    if(set.has(id)) set.delete(id); else set.add(id);
+    card.classList.toggle('on', set.has(id));
+    updateMatchSummary(otherKey);
+  });
+  return card;
+}
+function updateMatchSummary(otherKey){
+  const sum=document.querySelector(`.match[data-k="${CSS.escape(otherKey)}"] .summary`);
+  if(!sum) return;
+  const picks=getPicks(otherKey);
+  sum.innerHTML = `Marcadas: <b>${picks.gives.size}</b> para dar · <b>${picks.takes.size}</b> para recibir`;
+}
+function renderMatchCard(m){
+  const el=document.createElement('div'); el.className='match'+(matchExpanded.has(m.key)?' open':''); el.dataset.k=m.key;
+  const picks=getPicks(m.key);
+  el.innerHTML = `
+    <div class="match-head">
+      <div class="match-av">${escapeHtml(initials(m.display))}</div>
+      <div class="match-meta">
+        <div class="match-name">${escapeHtml(m.display)}</div>
+        <div class="match-sub">Tenés <b>${m.gives.length}</b> para darle · él tiene <b>${m.takes.length}</b> para vos</div>
+      </div>
+      <span class="match-arrow">›</span>
+    </div>
+    <div class="match-body">
+      <div class="swap-cols">
+        <div class="swap-col give">
+          <h3><span class="ic">↗️</span>Vos le das <span class="c">(tus repes que él necesita · ${m.gives.length})</span></h3>
+          <div class="swap-grid" data-side="gives"></div>
+        </div>
+        <div class="swap-col take">
+          <h3><span class="ic">↙️</span>Él te da <span class="c">(sus repes que te faltan · ${m.takes.length})</span></h3>
+          <div class="swap-grid" data-side="takes"></div>
+        </div>
+      </div>
+      <div class="match-actions">
+        <span class="summary">Tocá las figuritas que querés cambiar.</span>
+        <button class="btn btn-ghost" data-act="all">Tildar todas</button>
+        <button class="btn btn-ghost" data-act="none">Limpiar</button>
+        <button class="btn btn-primary" data-act="share">Compartir propuesta</button>
+      </div>
+    </div>`;
+  const gridGives=el.querySelector('[data-side="gives"]');
+  const gridTakes=el.querySelector('[data-side="takes"]');
+  m.gives.slice(0,60).forEach(id=>{ const c=makeSwapCard(id,'gives',m.key); if(picks.gives.has(id)) c.classList.add('on'); gridGives.appendChild(c); });
+  m.takes.slice(0,60).forEach(id=>{ const c=makeSwapCard(id,'takes',m.key); if(picks.takes.has(id)) c.classList.add('on'); gridTakes.appendChild(c); });
+  if(m.gives.length>60){ const x=document.createElement('div'); x.style.cssText='grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:4px'; x.textContent=`+${m.gives.length-60} más`; gridGives.appendChild(x); }
+  if(m.takes.length>60){ const x=document.createElement('div'); x.style.cssText='grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:4px'; x.textContent=`+${m.takes.length-60} más`; gridTakes.appendChild(x); }
+  el.querySelector('.match-head').addEventListener('click',()=>{
+    if(matchExpanded.has(m.key)){ matchExpanded.delete(m.key); el.classList.remove('open'); }
+    else { matchExpanded.add(m.key); el.classList.add('open'); }
+  });
+  el.querySelector('[data-act="all"]').addEventListener('click',()=>{
+    const picks=getPicks(m.key);
+    m.gives.forEach(id=>picks.gives.add(id)); m.takes.forEach(id=>picks.takes.add(id));
+    el.querySelectorAll('.swap-card').forEach(c=>c.classList.add('on'));
+    updateMatchSummary(m.key);
+  });
+  el.querySelector('[data-act="none"]').addEventListener('click',()=>{
+    const picks=getPicks(m.key); picks.gives.clear(); picks.takes.clear();
+    el.querySelectorAll('.swap-card').forEach(c=>c.classList.remove('on'));
+    updateMatchSummary(m.key);
+  });
+  el.querySelector('[data-act="share"]').addEventListener('click',()=>shareMatch(m));
+  updateMatchSummary(m.key);
+  return el;
+}
+function codeOf(id){ const f=findSticker(id); return f? f.sticker.code : id; }
+function shareMatch(m){
+  const picks=getPicks(m.key);
+  const give = (picks.gives.size? Array.from(picks.gives) : m.gives).map(codeOf);
+  const take = (picks.takes.size? Array.from(picks.takes) : m.takes).map(codeOf);
+  const lines = [
+    `Propuesta de cambio — Mundial 2026`,
+    `${userName} ⇄ ${m.display}`,
+    ``,
+    `Yo le doy (${give.length}): ${give.join(', ')}`,
+    `Él me da (${take.length}): ${take.join(', ')}`,
+  ];
+  const text = lines.join('\n');
+  if(navigator.share){ navigator.share({title:'Propuesta de cambio',text}).catch(()=>{}); return; }
+  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>toast('📋 Propuesta copiada')).catch(()=>fallbackCopy(text)); return; }
+  fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('📋 Propuesta copiada'); }catch(e){ alert(text); }
+  finally{ document.body.removeChild(ta); }
+}
+
 /* ---------- RESUMEN ---------- */
 function renderResumen(){
   const st=stats();
@@ -742,16 +933,18 @@ let curTab="album";
 function setTab(name){
   curTab=name;
   $$(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
-  ["album","faltan","repes","resumen"].forEach(n=>$("#tab-"+n).classList.toggle("hidden",n!==name));
+  ["album","faltan","repes","cambios","resumen"].forEach(n=>$("#tab-"+n).classList.toggle("hidden",n!==name));
   renderTab(name);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderTab(name){
   if(name==="faltan")renderFaltan();
   else if(name==="repes")renderRepes();
+  else if(name==="cambios")renderCambios();
   else if(name==="resumen")renderResumen();
 }
 $$(".tab").forEach(t=>t.addEventListener("click",()=>setTab(t.dataset.tab)));
+$("#btnReloadMatches").addEventListener('click',async()=>{ matchData=null; await renderCambios(); toast('Actualizado'); });
 
 /* ---------- modal ---------- */
 let modalId=null;
